@@ -1,6 +1,7 @@
 import streamlit as st
 from PrimerUtils import utils
 import requests
+import pandas as pd
 
 # Function to run with user input
 def process_inputs(chromosome, target_position, region_length=100, primer_length=20, target_tm=60, min_gc=40, max_gc=60):
@@ -17,6 +18,7 @@ def process_inputs(chromosome, target_position, region_length=100, primer_length
             'Build':build,
             'Sequence':sequence
         }
+        
     except requests.exceptions.HTTPError as e:
         # Handle the HTTPError separately
         #print(f"HTTPError: {e}")
@@ -28,6 +30,10 @@ def process_inputs(chromosome, target_position, region_length=100, primer_length
         # Handle other possible exceptions related to the request (e.g., ConnectionError)
         #print(f"RequestException: {e}")
         result={'RequestException': e}
+        return result
+    
+    if ((len(sequence)<(2*primer_length+region_length)) | ('N' in sequence)) :
+        result['Error']=f"Target sequence at CHRM {chromosome} POS {target_position} with given length is not suitable"
         return result
     
     try:
@@ -126,21 +132,22 @@ def main():
                 # Display the results
                 st.markdown("### Primers")
                 for key, value in result.items():
-                    if ('Blast' not in key):
-                        st.markdown(f"**{key}:** {value}")
-                    else:
+                    if ('Blast' in key):
                         blast_output=value
-
-                st.markdown("### Blast search")
-                for key, value in blast_output.items():
-                    st.markdown(f"**{key}:** {value}")
-
-                
+                    else:
+                        st.markdown(f"**{key}:** {value}")
             except:
                 st.write(result)
                 
+            st.markdown("### Blast search")
+            df=pd.DataFrame(blast_output)
+            st.dataframe(df)
+            
         else:
             st.write("Please enter a valid position.")
+            
+        
+        
     else:
         st.title("Press Run to design your primers")
     

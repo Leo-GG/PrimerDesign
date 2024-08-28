@@ -85,9 +85,9 @@ def run_in_silico_pcr(forward_primer, reverse_primer, genome_assembly='hg38'):
     response.raise_for_status()
 
     if response.status_code == 200:
-        return extract_alignments(response.text)[0]
+        return extract_alignments(response.text)
     else:
-        return {'Error':response.status_code}
+        return [{'Blast error':response.status_code}]
     
 
 def extract_alignments(html_text):
@@ -95,14 +95,26 @@ def extract_alignments(html_text):
     alignments = []
 
     for pre in soup.find_all('pre'):
-        alignment_info = pre.text.strip().split('\n')
-        if len(alignment_info) > 1:
-            alignments.append({
-                'location': alignment_info[0].split()[0],
-                'length': alignment_info[0].split()[1].replace('bp', ''),
-                'forward_primer': alignment_info[0].split()[2],
-                'reverse_primer': alignment_info[0].split()[3],
-                'sequence': '\n'.join(alignment_info[1:])
-            })
-
+        results_= pre.text.strip().split('>')[1:]     
+        for r in results_:
+            lines = r.split('\n')
+            alignment={}
+            for line in lines:
+                if line.startswith('chr'):
+                    parts = line.split()
+                    location = parts[0]
+                    length = parts[1].replace('bp', '')
+                    forward_primer = parts[2]
+                    reverse_primer = parts[3]
+                    sequence = '' #'\n'.join(parts[4:]) if len(parts) > 4 else ''
+                    alignment={'location': location,
+                        'length': length,
+                        'forward_primer': forward_primer,
+                        'reverse_primer': reverse_primer,
+                        'sequence': sequence}
+                elif len(alignment)>0:
+                    alignment['sequence']='\n'.join([alignment['sequence'],line])
+                    
+                alignments.append(alignment)
+    
     return alignments
