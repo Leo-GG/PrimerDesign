@@ -126,6 +126,7 @@ def main():
         # Only run if position is a valid number
         result = process_inputs(chromosome, position, region_length, primer_length, target_tm, min_gc, max_gc)
         if position is not None:
+            blast_output=[]
             try:
                 # Call the processing function with the selected parameters
                 result = process_inputs(chromosome, position, region_length, primer_length, target_tm, min_gc, max_gc)
