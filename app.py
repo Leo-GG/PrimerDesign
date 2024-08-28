@@ -79,6 +79,8 @@ def main():
     alignments along the genome.
     
     Tm are calculated using the [MeltingTemp](https://biopython.org/docs/1.75/api/Bio.SeqUtils.MeltingTemp.html) module from the [Biopython](https://biopython.org/) package.
+    
+    [Source](https://github.com/Leo-GG/PrimerDesign)
     """
     st.markdown(description, unsafe_allow_html=True)
 
